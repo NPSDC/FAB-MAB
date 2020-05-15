@@ -5,8 +5,6 @@ import pickle as pi
 import sys
 
 def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB", alpha = None, R = None):
-    #budget_arr = []
-    #regret_arr = []
     other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[], "bud_arr":[], "reg_arr":[]}
     for i in range(nTimes):
         if(method == "UCB"):
@@ -15,11 +13,11 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
             N, X, C, arm_pulled, tB = fairness_with_budget_thompson_sampling(k, B, reward_means, cost_means, alpha = alpha, R = R)
         else:
             sys.exit("Invalid input")
-        other_vars["N"].append(N)
-        other_vars["X"].append(X)
-        other_vars["C"].append(C)
-        other_vars["arm_pulled"].append(arm_pulled)
-        other_vars["tB"].append(tB)
+        # other_vars["N"].append(N)
+        # other_vars["X"].append(X)
+        # other_vars["C"].append(C)
+        # other_vars["arm_pulled"].append(arm_pulled)
+        # other_vars["tB"].append(tB)
         regret, reg_sum, budget_sum = compute_regret(C, arm_pulled, cost_means, reward_means, tB)
         other_vars["bud_arr"].append(budget_sum)
         other_vars["reg_arr"].append(reg_sum)

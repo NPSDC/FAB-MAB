@@ -5,9 +5,9 @@ import pickle as pi
 import sys
 
 def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB", alpha = None, R = None):
-    budget_arr = []
-    regret_arr = []
-    other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[]}
+    #budget_arr = []
+    #regret_arr = []
+    other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[], "bud_arr":[], "reg_arr":[]}
     for i in range(nTimes):
         if(method == "UCB"):
             N, X, C, arm_pulled, tB = UCB_with_budget_and_fair(k, B, reward_means, cost_means, alpha = alpha, R = R)
@@ -21,11 +21,11 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
         other_vars["arm_pulled"].append(arm_pulled)
         other_vars["tB"].append(tB)
         regret, reg_sum, budget_sum = compute_regret(C, arm_pulled, cost_means, reward_means, tB)
-        budget_arr.append(budget_sum)
-        regret_arr.append(reg_sum)
+        other_vars["bud_arr"].append(budget_sum)
+        other_vars["reg_arr"].append(reg_sum)
     with open(pickle_file, "wb") as w:
         pi.dump(other_vars, w)
-    return budget_arr, regret_arr
+    return other_vars["bud_arr"], other_vars["reg_arr"]
 
 
 def compute_average_regret(regret_array, budget_array, B, interval = 500):

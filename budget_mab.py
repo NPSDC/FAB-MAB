@@ -86,11 +86,12 @@ def run_alphas_mab(k, B, nTimes, reward_means, cost_means, method, alphas, R, pi
     reg_alpha = []
     fair_viol_alpha = []
     if method in ["thompson", "UCB"]:
-        for alpha in alphas:        
+        for alpha in alphas:
+            print("alpha ", alpha)
             bud_arr, reg_array, fair_viol_array = run_mab(k, B, nTimes, reward_means, cost_means, method, alpha, R, None)   
             inds, reg, fair_viol = compute_average(reg_array, bud_arr, fair_viol_array, interval = 100)
-            print(reg)
-            print(fair_viol)
+            #print(reg)
+            #print(fair_viol)
             reg_alpha.append(reg[-1])
             fair_viol_alpha.append(fair_viol[-1])
     else:

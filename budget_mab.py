@@ -51,7 +51,8 @@ def compute_average(regret_array, budget_array, fair_viol_array = None, interval
         min_budget = min(budget_array[i][-1], min_budget)
     
     #print(min_budget)
-    time_bud = range(0, int(min_budget) + 1, interval)
+    time_bud = np.array(range(1, int(min_budget) + 2, interval))
+    time_bud[-1] = time_bud[-1] - 1
     inds_match = list()
     
     if(len(regret_array) != len(budget_array)):
@@ -62,7 +63,7 @@ def compute_average(regret_array, budget_array, fair_viol_array = None, interval
     av_reg = np.zeros(len(time_bud))
     for i in range(n_trials):
         inds_match.append(match(time_bud, budget_array[i]))
-        av_reg += regret_array[i][inds_match[i]]   
+        av_reg += regret_array[i][inds_match[i]]
     av_reg /= n_trials
 
     if(fair_viol_array is not None):

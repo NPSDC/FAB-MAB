@@ -36,7 +36,7 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
         return other_vars["bud_arr"], other_vars["reg_arr"], other_vars["FV"]
     return other_vars["bud_arr"], other_vars["reg_arr"]
 
-def compute_average_regret(regret_array, budget_array, B, interval = 500):
+def compute_average(regret_array, budget_array, fair_viol_array = None, interval = 500):
     """Parameters
     regret_array - A list of numpy arrays of size N*tB containing regret, N is the number of times an experiment has been run, tB is varying the time required to reacha budget
     regret_array - A list of numpy arrays of size N*tB containing budget, N is the number of times an experiment has been run, tB is varying the time required to reacha budget
@@ -48,7 +48,7 @@ def compute_average_regret(regret_array, budget_array, B, interval = 500):
         min_budget = min(budget_array[i][-1], min_budget)
     
     #print(min_budget)
-    time_bud = range(0, B + 1, interval)
+    time_bud = range(0, int(min_budget) + 1, interval)
     inds_match = list()
     
     if(len(regret_array) != len(budget_array)):
@@ -59,11 +59,17 @@ def compute_average_regret(regret_array, budget_array, B, interval = 500):
     av_reg = np.zeros(len(time_bud))
     for i in range(n_trials):
         inds_match.append(match(time_bud, budget_array[i]))
-        av_reg += regret_array[i][inds_match[i]]
-    
-    
+        av_reg += regret_array[i][inds_match[i]]   
     av_reg /= n_trials
-    
+
+    if(fair_viol_array is not None):
+        av_fair_viol = np.zeros(len(time_bud))
+        for i in range(n_trials):
+            av_fair_viol += fair_viol_array[i][inds_match[i]]
+    av_fair_viol /= n_trials
+
+    if(fair_viol_array is not None):
+        return inds_match, av_reg, av_fair_viol
     return inds_match, av_reg
 
 if __name__ == "__main__":
@@ -73,5 +79,5 @@ if __name__ == "__main__":
     reward_means = np.random.rand(10)
     cost_means = np.random.choice(range(1,k*10+1), size = k, replace = False)/10
     bud_arr, reg_array = run_mab(k, B, 10, reward_means, cost_means, "ucb_bud.pickle")
-    reg = compute_average_regret(reg_array, bud_arr, B, interval = 100)
+    inds, reg = compute_average_regret(reg_array, bud_arr, interval = 100)
 

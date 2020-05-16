@@ -2,6 +2,7 @@ from ucb_budget import UCB_with_budget_and_fair
 from thompson_budget import fairness_with_budget_thompson_sampling
 from budget_helper import *
 import pickle as pi
+import os
 import sys
 
 def run_mab(k, B, nTimes, reward_means, cost_means, method = "UCB", alpha = None, R = None, pickle_file = None):
@@ -10,6 +11,7 @@ def run_mab(k, B, nTimes, reward_means, cost_means, method = "UCB", alpha = None
     if not alpha is None:
         other_vars["FV"] = [] 
     for i in range(nTimes):
+        print("iteration ", i)
         if(method == "UCB"):
             N, X, C, arm_pulled, tB = UCB_with_budget_and_fair(k, B, reward_means, cost_means, alpha = alpha, R = R)
         elif(method == "thompson"):
@@ -37,7 +39,7 @@ def run_mab(k, B, nTimes, reward_means, cost_means, method = "UCB", alpha = None
         return other_vars["bud_arr"], other_vars["reg_arr"], other_vars["FV"]
     return other_vars["bud_arr"], other_vars["reg_arr"]
 
-def compute_average(regret_array, budget_array, fair_viol_array = None, interval = 500):
+def compute_average(regret_array, budget_array, fair_viol_array = None, interval = 500, pick_file = None):
     """Parameters
     regret_array - A list of numpy arrays of size N*tB containing regret, N is the number of times an experiment has been run, tB is varying the time required to reacha budget
     regret_array - A list of numpy arrays of size N*tB containing budget, N is the number of times an experiment has been run, tB is varying the time required to reacha budget
@@ -67,13 +69,20 @@ def compute_average(regret_array, budget_array, fair_viol_array = None, interval
         av_fair_viol = np.zeros(len(time_bud))
         for i in range(n_trials):
             av_fair_viol += fair_viol_array[i][inds_match[i]]
-    av_fair_viol /= n_trials
+        av_fair_viol /= n_trials
+
+    if(pick_file is not None):
+        comb = (av_reg)
+        if(fair_viol_array is not None):
+            comb = (av_reg, av_fair_viol)
+        pi.dump(comb, open(pick_file, "wb"))
 
     if(fair_viol_array is not None):
         return inds_match, av_reg, av_fair_viol
+
     return inds_match, av_reg
 
-def run_alphas_mab(k, B, nTimes, reward_means, cost_means, method, alphas, R):
+def run_alphas_mab(k, B, nTimes, reward_means, cost_means, method, alphas, R, pick_file = None):
     reg_alpha = []
     fair_viol_alpha = []
     if method in ["thompson", "UCB"]:
@@ -84,9 +93,12 @@ def run_alphas_mab(k, B, nTimes, reward_means, cost_means, method, alphas, R):
             print(fair_viol)
             reg_alpha.append(reg[-1])
             fair_viol_alpha.append(fair_viol[-1])
-
     else:
         sys.exit("Invalid input")
+
+    if(pick_file is not None):
+        comb = (reg_alpha, fair_viol_alpha)
+        pi.dump(comb, open(pick_file, "wb"))
 
     return reg_alpha, fair_viol_alpha
 

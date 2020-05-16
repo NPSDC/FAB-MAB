@@ -64,10 +64,11 @@ def fairness_with_budget_thompson_sampling(K, budget, mu, cost, alpha = None, R 
         if(alpha is not None and R is not None):
             unfair_arm = []
             unfair_val = []
+            
             for i in range(K):
                 if (R[i]*(t-1) - arm_pulled_count[t][i]) > alpha:
                     unfair_arm.append(i)
-                    unfair_val.append(r[i]*(t-1) - arm_pulled_count[t][i])
+                    unfair_val.append(R[i]*(t-1) - arm_pulled_count[t][i])
 
             if unfair_arm:
                 play_thomp = False

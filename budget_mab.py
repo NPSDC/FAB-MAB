@@ -5,7 +5,10 @@ import pickle as pi
 import sys
 
 def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB", alpha = None, R = None):
-    other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[], "bud_arr":[], "reg_arr":[]}
+    #other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[], "bud_arr":[], "reg_arr":[]}
+    other_vars = {"bud_arr":[], "reg_arr":[]}
+    if not alpha is None:
+        other_vars["FV"] = [] 
     for i in range(nTimes):
         if(method == "UCB"):
             N, X, C, arm_pulled, tB = UCB_with_budget_and_fair(k, B, reward_means, cost_means, alpha = alpha, R = R)
@@ -13,6 +16,11 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
             N, X, C, arm_pulled, tB = fairness_with_budget_thompson_sampling(k, B, reward_means, cost_means, alpha = alpha, R = R)
         else:
             sys.exit("Invalid input")
+        if not alpha is None:
+            FV = np.array(range(0, tB + 1), ndmin = 2).T @ np.array(R, ndmin = 2) - N[0:tB+1, ]
+            FV[FV < 0] = 0
+            other_vars["FV"].append(np.max(FV, axis = 1))
+
         # other_vars["N"].append(N)
         # other_vars["X"].append(X)
         # other_vars["C"].append(C)
@@ -21,10 +29,12 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
         regret, reg_sum, budget_sum = compute_regret(C, arm_pulled, cost_means, reward_means, tB)
         other_vars["bud_arr"].append(budget_sum)
         other_vars["reg_arr"].append(reg_sum)
+
     with open(pickle_file, "wb") as w:
         pi.dump(other_vars, w)
+    if(not alpha is None):
+        return other_vars["bud_arr"], other_vars["reg_arr"], other_vars["FV"]
     return other_vars["bud_arr"], other_vars["reg_arr"]
-
 
 def compute_average_regret(regret_array, budget_array, B, interval = 500):
     """Parameters

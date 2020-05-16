@@ -4,7 +4,7 @@ from budget_helper import *
 import pickle as pi
 import sys
 
-def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB", alpha = None, R = None):
+def run_mab(k, B, nTimes, reward_means, cost_means, method = "UCB", alpha = None, R = None, pickle_file = None):
     #other_vars = {"N":[], "X":[], "C":[], "arm_pulled":[], "tB":[], "bud_arr":[], "reg_arr":[]}
     other_vars = {"bud_arr":[], "reg_arr":[]}
     if not alpha is None:
@@ -30,8 +30,9 @@ def run_mab(k, B, nTimes, reward_means, cost_means, pickle_file, method = "UCB",
         other_vars["bud_arr"].append(budget_sum)
         other_vars["reg_arr"].append(reg_sum)
 
-    with open(pickle_file, "wb") as w:
-        pi.dump(other_vars, w)
+    if pickle_file is not None:
+        with open(pickle_file, "wb") as w:
+            pi.dump(other_vars, w)
     if(not alpha is None):
         return other_vars["bud_arr"], other_vars["reg_arr"], other_vars["FV"]
     return other_vars["bud_arr"], other_vars["reg_arr"]
@@ -72,6 +73,23 @@ def compute_average(regret_array, budget_array, fair_viol_array = None, interval
         return inds_match, av_reg, av_fair_viol
     return inds_match, av_reg
 
+def run_alphas_mab(k, B, nTimes, reward_means, cost_means, method, alphas, R):
+    reg_alpha = []
+    fair_viol_alpha = []
+    if method in ["thompson", "UCB"]:
+        for alpha in alphas:        
+            bud_arr, reg_array, fair_viol_array = run_mab(k, B, nTimes, reward_means, cost_means, method, alpha, R, None)   
+            inds, reg, fair_viol = compute_average(reg_array, bud_arr, fair_viol_array, interval = 100)
+            print(reg)
+            print(fair_viol)
+            reg_alpha.append(reg[-1])
+            fair_viol_alpha.append(fair_viol[-1])
+
+    else:
+        sys.exit("Invalid input")
+
+    return reg_alpha, fair_viol_alpha
+
 if __name__ == "__main__":
     nTimes = 10 ## number of times to run the algorithm
     B = 1000
@@ -79,5 +97,5 @@ if __name__ == "__main__":
     reward_means = np.random.rand(10)
     cost_means = np.random.choice(range(1,k*10+1), size = k, replace = False)/10
     bud_arr, reg_array = run_mab(k, B, 10, reward_means, cost_means, "ucb_bud.pickle")
-    inds, reg = compute_average_regret(reg_array, bud_arr, interval = 100)
+    inds, reg = compute_regret(reg_array, bud_arr, interval = 100)
 

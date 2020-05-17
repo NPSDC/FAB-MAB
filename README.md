@@ -1,2 +1,2 @@
-# fismab
-Fairness in multiarm bandit problem
+# FAB-MAB
+Fairness and budget constraints in the multi arm bandit setting
